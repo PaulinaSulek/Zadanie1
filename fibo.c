@@ -11,7 +11,7 @@ int main()
   printf("Fibo.c\n");
   printf("Paulina Sulek \n");
   printf("I2S 1.4\n");
-  printf("Numer elem. ciągu Fibonacciego (z wartości <0, 89>): \n");
+  printf("Podaj nr elem. ciągu Fibonacciego (z wartości <0, 89>): \n");
   int n=0;
   if (scanf("%d", &n) != 1 || n < 0 || n > 89)
   {
