@@ -1,0 +1,58 @@
+name: ci
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    -
+    steps:
+      - uses: actions/checkout@v3
+    -
+      - name: Buildx set-up
+        id: buildx
+        uses: docker/setup-buildx-action@v2
+     -   
+      - name: Docker Setup QEMU
+        uses: docker/setup-qemu-action@v2
+    -
+      - name: Login to GitHub CR
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+    -
+      - name: Login to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+    -
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            ghcr.io/paulinasulek/fibo
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+      - name: Build and push
+        id: docker_build
+        uses: docker/build-push-action@v3
+        with:
+          cache-from: type=registry,ref=docker.io/paulinasulek/fibo:buildcache
+          cache-to: type=registry,ref=docker.io/paulinasulek/fibo:buildcache
+          platforms: linux/amd64,linux/arm64
+          context: ./
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          -
